@@ -1,0 +1,60 @@
+# Carrossel TasteWay — "{{ tema }}"
+
+**Formato:** carrossel Instagram ({{ total_cards }} cards: capa + {{ n }} casas + CTA)
+**Tom:** {{ tom }}
+**Gerado por:** tasteway-content-kit
+
+---
+
+## CARD 1 — CAPA
+
+**Título:**
+{{ n }} {{ tema_capa }}
+
+**Subtítulo:**
+Os endereços que merecem entrar (já!) no seu radar.
+Arrasta e salva pra não esquecer 👉
+
+---
+{% for r in restaurantes %}
+## CARD {{ loop.index + 1 }} — {{ r.nome | upper }} · {{ r.bairro }}
+
+**Título:** {{ r.nome | upper }}{% if r.emoji %} {{ r.emoji }}{% endif %}
+
+**Cozinha:** {{ r.cozinha }}
+
+{{ r.destaque }}
+
+📍 {{ r.bairro }}{% if r.instagram_ok %} · {{ r.instagram }}{% endif %}
+
+---
+{% endfor %}
+## CARD {{ total_cards }} — CTA
+
+**Título:** Qual entra primeiro na sua lista? 😋
+
+Salva esse post pra não perder, manda pra quem ama comer bem
+e marca a gente quando for.
+
+Mais roteiros assim aqui no {{ handle }} ✨
+
+---
+
+## LEGENDA (caption)
+
+{{ tema_capa | capitalize }} — separamos {{ n }} pra você. 📍✨ Salva pra não esquecer e vai riscando da lista 👇
+
+{% for r in restaurantes %}{{ loop.index }}. {{ r.nome }} — {{ r.cozinha | lower }} · {{ r.bairro }}{% if r.instagram_ok %} · {{ r.instagram }}{% endif %}
+{% endfor %}
+Qual você prova primeiro? Conta aqui nos comentários 👇
+
+{{ hashtags }}
+
+---
+
+## CHECKLIST ANTES DE PUBLICAR
+{% if faltando %}
+- [ ] Confirmar @ do Instagram (faltando): {{ faltando }}{% endif %}
+- [ ] Confirmar @ oficial da TasteWay (placeholder: {{ handle }})
+- [ ] Conferir direito de uso das fotos (divulgação x crédito)
+- [ ] Revisar preços/horários se forem citados (mudam rápido)
