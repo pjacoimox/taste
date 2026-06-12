@@ -10,19 +10,19 @@
 <style>
   /* Fonte de título da marca. Coloque o arquivo em fonts/ e o app passa a usá-la. */
   @font-face{
-    font-family:'Cook Tramvoid';
-    src:url('fonts/CookTramvoid.woff2') format('woff2'),
-        url('fonts/CookTramvoid.woff') format('woff'),
-        url('fonts/CookTramvoid.otf') format('opentype'),
-        url('fonts/CookTramvoid.ttf') format('truetype');
-    font-weight:400 700; font-display:swap;
+    font-family:'Cook Trapvoid';
+    src:url('fonts/CookTrapvoid.otf') format('opentype'),
+        url('fonts/CookTrapvoid.woff2') format('woff2'),
+        url('fonts/CookTrapvoid.woff') format('woff'),
+        url('fonts/CookTrapvoid.ttf') format('truetype');
+    font-weight:400 800; font-display:swap;
   }
   :root{
     /* paleta oficial TasteWay */
     --terra:#F5733B; --terra-esc:#084734; --creme:#F7F3E0; --bg:#ECE5D2;
     --tinta:#15281F; --tinta-2:#5A6A5F; --linha:rgba(8,71,52,.16);
     --verde:#35DB60; --verde-clr:#CEF27B; --raio:13px;
-    --titulo:'Cook Tramvoid','Fraunces',Georgia,serif;
+    --titulo:'Cook Trapvoid','Fraunces',Georgia,serif;
     --ui:'Lato',system-ui,sans-serif;
   }
   *{box-sizing:border-box}
@@ -39,7 +39,9 @@
   .topbar .sep{flex:1}
   .cfg{background:var(--creme);border:1px solid var(--linha);border-radius:var(--raio);padding:12px 16px;margin:0 0 18px}
   .cfg strong{font-size:13px;color:var(--terra-esc);display:block;margin-bottom:8px}
-  .cfg .slider-row{max-width:420px}
+  .cfg .slider-row{max-width:460px}
+  .numin{width:66px;flex:0 0 auto;font-family:var(--ui);font-size:13px;color:var(--tinta);
+    background:#fff;border:1px solid var(--linha);border-radius:8px;padding:6px 8px}
 
   .grid{display:grid;grid-template-columns:230px 1fr 300px;gap:18px;align-items:start}
   @media(max-width:980px){.grid{grid-template-columns:1fr}}
@@ -62,9 +64,22 @@
   .canvas-shell{position:relative;width:100%;max-width:380px}
   #main{width:100%;border-radius:16px;display:block;background:#102a20;cursor:grab;touch-action:none}
   #main.drag{cursor:grabbing}
+  #main.dropping{outline:3px dashed var(--terra);outline-offset:-3px}
+  .item.dropping{border-color:var(--terra);background:rgba(245,115,59,.1)}
   @keyframes fadein{from{opacity:.35}to{opacity:1}}
   #main.fade{animation:fadein .35s ease}
   .hint-drag{font-size:12px;color:var(--tinta-2);margin-top:8px;text-align:center}
+  .inline-wrap{position:absolute;z-index:7;display:flex;flex-direction:column;gap:5px}
+  .fmt-bar{display:inline-flex;align-items:center;gap:2px;align-self:flex-start;background:#fff;
+    border:1px solid var(--linha);border-radius:9px;padding:3px;box-shadow:0 3px 14px rgba(0,0,0,.22)}
+  .fmt-bar button{border:none;background:transparent;width:28px;height:28px;border-radius:6px;cursor:pointer;
+    font-size:15px;color:#15281F;display:flex;align-items:center;justify-content:center;font-family:var(--ui)}
+  .fmt-bar button:hover{background:rgba(245,115,59,.14)}
+  .fmt-bar button.on{background:var(--terra);color:#fff}
+  .fmt-bar .sz{min-width:34px;text-align:center;font-size:13px;color:#15281F}
+  .inline-edit{width:100%;font-family:var(--ui);font-size:14px;line-height:1.25;
+    border:2px solid var(--terra);border-radius:7px;background:rgba(255,255,255,.97);color:#15281F;
+    padding:5px 7px;resize:none;box-shadow:0 3px 14px rgba(0,0,0,.25);outline:none}
 
   /* controles à direita */
   label{display:block;font-size:12px;font-weight:700;margin:12px 0 5px;color:var(--tinta-2)}
@@ -113,11 +128,13 @@
   </div>
 
   <div class="cfg" id="cfgPanel" hidden>
-    <strong>Margem dos slides internos</strong>
-    <div class="slider-row"><label for="padL">Esquerda</label>
-      <input type="range" id="padL" min="0" max="160" step="1" value="60"><span class="val" id="padLv">60px</span></div>
-    <div class="slider-row"><label for="padB">Inferior</label>
-      <input type="range" id="padB" min="0" max="160" step="1" value="60"><span class="val" id="padBv">60px</span></div>
+    <strong>Margem do bloco de texto (slides internos)</strong>
+    <div class="slider-row"><label>Esquerda</label>
+      <input type="range" id="padL" min="0" max="200" step="1" value="60" oninput="setMargin('padL',this.value)">
+      <input type="number" id="padLn" class="numin" min="0" max="400" value="60" oninput="setMargin('padL',this.value)"></div>
+    <div class="slider-row"><label>Inferior</label>
+      <input type="range" id="padB" min="0" max="200" step="1" value="60" oninput="setMargin('padB',this.value)">
+      <input type="number" id="padBn" class="numin" min="0" max="400" value="60" oninput="setMargin('padB',this.value)"></div>
   </div>
 
   <div class="grid">
@@ -136,7 +153,7 @@
       <div class="canvas-shell">
         <canvas id="main" width="1080" height="1350" aria-label="Prévia do slide"></canvas>
       </div>
-      <div class="hint-drag">arraste a imagem pra reposicionar · 1080 × 1350 px (4:5)</div>
+      <div class="hint-drag">1080 × 1350 px · arraste imagens de fora pra virar fundo · arraste o texto pra mover · 2× pra editar</div>
     </div>
 
     <!-- DIREITA: edição do slide selecionado -->
@@ -152,17 +169,29 @@
 <script>
 "use strict";
 const GREEN="#CEF27B", GREEN2="#35DB60", CREME="#F7F3E0", WHITE="#F7F3E0";
-const TITULO='"Cook Tramvoid","Fraunces",Georgia,serif';
+const TITULO='"Cook Trapvoid","Fraunces",Georgia,serif';
 const BODY='Lato,system-ui,sans-serif';
+const DEF_SIZE={destaque:98,titulo:98,nome:85,bairro:27,insta:27,frase:27};
+const DEF_W={destaque:600,titulo:600,nome:600,bairro:700,insta:700,frase:400};
+const FAM_T={destaque:1,titulo:1,nome:1};
+function fmtOf(sl,f){ return (sl && sl.fmt && sl.fmt[f]) || {}; }
+function fsize(sl,f){ return fmtOf(sl,f).size || DEF_SIZE[f]; }
+function fontStr(sl,f,s){
+  const o=fmtOf(sl,f), base=DEF_W[f];
+  const w=o.bold ? (base>=700?800:700) : base;
+  const it=o.italic ? "italic " : "";
+  const fam=FAM_T[f] ? TITULO : BODY;
+  return `${it}${w} ${fsize(sl,f)*s}px ${fam}`;
+}
 
 function imgState(fade=75){ return {image:null, src:"", zoom:1, bri:100, con:100, sat:100, panX:0, panY:0, fade}; }
 const state = {
   logo:{image:null}, back:{image:null},
-  cover:{destaque:"5 brunches", titulo:"nos Jardins pra você visitar", img:imgState(60)},
+  cover:{destaque:"5 brunches", titulo:"nos Jardins pra você visitar", tx:0, ty:0, fmt:{}, img:imgState(60)},
   content:[
-    {nome:"Lena", bairro:"Pinheiros", frase:"Mineira contemporânea com pão de queijo folhado.", insta:"@lenaemsp", img:imgState(80)},
-    {nome:"Sová", bairro:"Jardins", frase:"Judaica e padaria, aberto o dia todo.", insta:"@sovarestaurante", img:imgState(80)},
-    {nome:"Mimada Café", bairro:"Jardins", frase:"Brunch da Renata Vanzetto, clima de casa de vó.", insta:"@mimada.brunch", img:imgState(80)},
+    {nome:"Lena", bairro:"Pinheiros", frase:"Mineira contemporânea com pão de queijo folhado.", insta:"@lenaemsp", tx:0, ty:0, fmt:{}, img:imgState(80)},
+    {nome:"Sová", bairro:"Jardins", frase:"Judaica e padaria, aberto o dia todo.", insta:"@sovarestaurante", tx:0, ty:0, fmt:{}, img:imgState(80)},
+    {nome:"Mimada Café", bairro:"Jardins", frase:"Brunch da Renata Vanzetto, clima de casa de vó.", insta:"@mimada.brunch", tx:0, ty:0, fmt:{}, img:imgState(80)},
   ]
 };
 state.settings = { padL:60, padB:60 };
@@ -230,42 +259,68 @@ function drawWordmark(ctx,W,H,centered){
     ctx.fillText("tasteway", centered?W/2:70*s, (centered?120:96)*s);
   }
 }
-function drawCover(ctx,W,H){
-  const s=W/1080;
-  drawImg(ctx,W,H,state.cover.img);
-  vgrad(ctx,W,H,0,`rgba(0,0,0,${state.cover.img.fade/100})`,0.62,"rgba(0,0,0,.05)");
+function drawCover(ctx,W,H,rec){
+  const s=W/1080, sl=state.cover;
+  drawImg(ctx,W,H,sl.img);
+  vgrad(ctx,W,H,0,`rgba(0,0,0,${sl.img.fade/100})`,0.62,"rgba(0,0,0,.05)");
   drawWordmark(ctx,W,H,true);
+  const ox=(sl.tx||0)*s, oy=(sl.ty||0)*s;
   ctx.textAlign="center"; ctx.textBaseline="alphabetic";
-  const size=98*s, lh=100*s, maxW=W-120*s;
-  ctx.font=`600 ${size}px ${TITULO}`;
-  const dl=wrap(ctx,state.cover.destaque,maxW);
-  const tl=wrap(ctx,state.cover.titulo,maxW);
-  let y=240*s;
-  ctx.fillStyle=GREEN; dl.forEach(l=>{ ctx.fillText(l,W/2,y); y+=lh; });
-  ctx.fillStyle=CREME; tl.forEach(l=>{ ctx.fillText(l,W/2,y); y+=lh; });
+  const maxW=W-120*s;
+  const dSize=fsize(sl,'destaque'), tSize=fsize(sl,'titulo');
+  const dLh=dSize*1.02*s, tLh=tSize*1.02*s;
+  ctx.font=fontStr(sl,'destaque',s); const dl=wrap(ctx,sl.destaque,maxW);
+  ctx.font=fontStr(sl,'titulo',s); const tl=wrap(ctx,sl.titulo,maxW);
+  const cx=W/2+ox; let y=240*s+oy; const top=y-Math.max(dSize,tSize)*s;
+  let yDestTop=0,yDestBot=0,yTitTop=0,yTitBot=0;
+  ctx.fillStyle=GREEN; ctx.font=fontStr(sl,'destaque',s);
+  dl.forEach((l,k)=>{ if(k===0)yDestTop=y; ctx.fillText(l,cx,y); yDestBot=y; y+=dLh; });
+  ctx.fillStyle=CREME; ctx.font=fontStr(sl,'titulo',s);
+  tl.forEach((l,k)=>{ if(k===0)yTitTop=y; ctx.fillText(l,cx,y); yTitBot=y; y+=tLh; });
+  if(rec){
+    const x=60*s, w=W-120*s, bot=(yTitBot||yDestBot)+20*s;
+    rec.block={x,y:top,w,h:bot-top};
+    rec.fields={
+      destaque:{x,y:yDestTop-dSize*s,w,h:(yDestBot-(yDestTop-dSize*s))+18*s},
+      titulo: tl.length?{x,y:yTitTop-tSize*s,w,h:(yTitBot-(yTitTop-tSize*s))+18*s}:{x,y:yDestBot+8*s,w,h:tSize*s}
+    };
+  }
 }
-function drawContent(ctx,W,H,c){
+function drawContent(ctx,W,H,c,rec){
   const s=W/1080;
   drawImg(ctx,W,H,c.img);
   vgrad(ctx,W,H,0.30,"rgba(0,0,0,0)",1,`rgba(0,0,0,${c.img.fade/100})`);
-  const padL=state.settings.padL*s, padB=state.settings.padB*s, maxW=W-2*padL;
+  const ox=(c.tx||0)*s, oy=(c.ty||0)*s;
+  const padL=state.settings.padL*s+ox, padB=state.settings.padB*s, maxW=W-2*state.settings.padL*s;
   ctx.textAlign="left"; ctx.textBaseline="alphabetic";
-  ctx.font=`600 ${85*s}px ${TITULO}`;
-  const nomeLines=wrap(ctx,c.nome,maxW);
-  ctx.font=`400 ${27*s}px ${BODY}`;
-  const fraseLines=c.frase?wrap(ctx,c.frase,maxW):[];
-  const hB=33*s, hN=92*s, hF=36*s, hI=34*s;
-  const gap=12*s;
-  const blockH=hB+gap+nomeLines.length*hN+(fraseLines.length?gap+fraseLines.length*hF:0)+gap+hI;
-  let y=H-padB-blockH+hB;
-  ctx.fillStyle=GREEN; ctx.font=`700 ${27*s}px ${BODY}`;
-  ctx.fillText((c.bairro||"").toUpperCase(), padL, y); y+=gap;
-  ctx.fillStyle=CREME; ctx.font=`600 ${85*s}px ${TITULO}`;
-  nomeLines.forEach(l=>{ y+=hN; ctx.fillText(l,padL,y); });
-  if(fraseLines.length){ y+=gap; ctx.fillStyle="rgba(247,243,224,.92)"; ctx.font=`400 ${27*s}px ${BODY}`;
-    fraseLines.forEach(l=>{ y+=hF; ctx.fillText(l,padL,y); }); }
-  y+=gap+hI; ctx.fillStyle=GREEN2; ctx.font=`700 ${27*s}px ${BODY}`;
-  ctx.fillText(c.insta||"", padL, y);
+  const nSize=fsize(c,'nome'), frSize=fsize(c,'frase'), bSize=fsize(c,'bairro'), iSize=fsize(c,'insta');
+  const hN=nSize*1.08*s, hF=frSize*1.33*s, hB=Math.max(bSize,iSize)*1.22*s, gap=12*s;
+  ctx.font=fontStr(c,'nome',s); const nomeLines=wrap(ctx,c.nome,maxW);
+  ctx.font=fontStr(c,'frase',s); const fraseLines=c.frase?wrap(ctx,c.frase,maxW):[];
+  const blockH=hB+gap+nomeLines.length*hN+(fraseLines.length?gap+fraseLines.length*hF:0);
+  let y=H-padB-blockH+hB+oy; const topY=y-bSize*s;
+  const bairroTxt=(c.bairro||"").toUpperCase();
+  ctx.font=fontStr(c,'bairro',s); ctx.fillStyle=GREEN; ctx.fillText(bairroTxt,padL,y);
+  const bw=bairroTxt?ctx.measureText(bairroTxt).width:0;
+  const instaGap=14*s, instaX=padL+(bairroTxt?bw+instaGap:0);
+  ctx.font=fontStr(c,'insta',s); ctx.fillStyle=GREEN2; ctx.fillText(c.insta||"",instaX,y);
+  const yEye=y; y+=gap;
+  ctx.fillStyle=CREME; ctx.font=fontStr(c,'nome',s);
+  let yNomeTop=0,yNomeBot=0;
+  nomeLines.forEach((l,k)=>{ y+=hN; if(k===0)yNomeTop=y; yNomeBot=y; ctx.fillText(l,padL,y); });
+  let yFrTop=0,yFrBot=0;
+  if(fraseLines.length){ y+=gap; ctx.fillStyle="rgba(247,243,224,.92)"; ctx.font=fontStr(c,'frase',s);
+    fraseLines.forEach((l,k)=>{ y+=hF; if(k===0)yFrTop=y; yFrBot=y; ctx.fillText(l,padL,y); }); }
+  if(rec){
+    const w=maxW, bot=(fraseLines.length?yFrBot:yNomeBot)+10*s, eyeH=(yEye-topY)+8*s;
+    rec.block={x:padL,y:topY,w,h:bot-topY};
+    rec.fields={
+      bairro:{x:padL,y:topY,w:Math.max(40*s,(bairroTxt?bw:60*s)+instaGap/2),h:eyeH},
+      insta:{x:instaX-instaGap/2,y:topY,w:Math.max(60*s,w-(instaX-instaGap/2-padL)),h:eyeH},
+      nome:{x:padL,y:yNomeTop-nSize*s,w,h:(yNomeBot-(yNomeTop-nSize*s))+10*s},
+      frase:fraseLines.length?{x:padL,y:yFrTop-frSize*s,w,h:(yFrBot-(yFrTop-frSize*s))+8*s}:{x:padL,y:yNomeBot+6*s,w,h:30*s}
+    };
+  }
 }
 function drawBack(ctx,W,H){
   if(state.back.image){ drawImg(ctx,W,H,{image:state.back.image,zoom:1,bri:100,con:100,sat:100,panX:0,panY:0}); }
@@ -276,17 +331,19 @@ function drawBack(ctx,W,H){
     ctx.fillText("contracapa padrão — suba sua imagem no topo", W/2, H*0.55);
   }
 }
-function drawItem(ctx,W,H,it){
+function drawItem(ctx,W,H,it,rec){
   ctx.clearRect(0,0,W,H);
-  if(it.type==="cover") drawCover(ctx,W,H);
-  else if(it.type==="content") drawContent(ctx,W,H,state.content[it.i]);
+  if(it.type==="cover") drawCover(ctx,W,H,rec);
+  else if(it.type==="content") drawContent(ctx,W,H,state.content[it.i],rec);
   else drawBack(ctx,W,H);
 }
 
 /* ---------- render UI ---------- */
 const main=$("#main"), mctx=main.getContext("2d");
+let mainRec=null;
 function renderMain(){
-  drawItem(mctx,1080,1350,items()[sel]);
+  mainRec={};
+  drawItem(mctx,1080,1350,items()[sel],mainRec);
   main.classList.remove("fade"); void main.offsetWidth; main.classList.add("fade");
 }
 function renderList(){
@@ -302,6 +359,9 @@ function renderList(){
     else lab.innerHTML=esc(state.content[it.i].nome||"Slider")+"<small>"+esc(state.content[it.i].bairro||"")+"</small>";
     row.appendChild(cv); row.appendChild(lab);
     row.addEventListener("click",()=>{ sel=idx; renderAll(); });
+    row.addEventListener("dragover",e=>{ e.preventDefault(); row.classList.add("dropping"); });
+    row.addEventListener("dragleave",()=>row.classList.remove("dropping"));
+    row.addEventListener("drop",e=>{ e.preventDefault(); row.classList.remove("dropping"); sel=idx; dropImages(items()[idx], e.dataTransfer.files); });
     list.appendChild(row);
   });
 }
@@ -332,6 +392,8 @@ function renderEditor(){
   const im=currentImg();
   html+=`<label class="file-label btn ghost sm" style="margin-top:14px">${im.image?"Trocar foto":"Subir foto de fundo"}
     <input type="file" id="imgFile" accept="image/*" class="visually-hidden"></label>`;
+  if(!im.image) html+=`<p style="font-size:12px;color:var(--tinta-2);margin:8px 0 0;line-height:1.45">Zoom, brilho, contraste e saturação só mudam a arte depois que o slide tiver uma foto. Suba acima ou arraste uma imagem pro preview.</p>`;
+  html+=`<p style="font-size:12px;color:var(--tinta-2);margin:8px 0 0;line-height:1.45">Pra mudar tamanho, negrito ou itálico do texto, dê duplo clique nele na arte.</p>`;
   html+=sliderRow("zoom","Zoom",1,3,0.02,im.zoom,"×");
   html+=sliderRow("bri","Brilho",50,150,1,im.bri,"%");
   html+=sliderRow("con","Contraste",50,150,1,im.con,"%");
@@ -361,7 +423,7 @@ function bindEditor(it){
       if(key==="zoom"){clampPan(im); v.textContent=im.zoom.toFixed(2)+"×";} else v.textContent=Math.round(im[key])+"%";
       renderMain(); renderList(); }); };
   sl("zoom","zoom"); sl("bri","bri"); sl("con","con"); sl("sat","sat"); sl("fade","fade");
-  const rf=$("#resetImg"); if(rf) rf.addEventListener("click",()=>{ im.zoom=1;im.bri=100;im.con=100;im.sat=100;im.panX=0;im.panY=0; renderEditor(); renderMain(); renderList(); });
+  const rf=$("#resetImg"); if(rf) rf.addEventListener("click",()=>{ im.zoom=1;im.bri=100;im.con=100;im.sat=100;im.panX=0;im.panY=0; const ts=curText(); if(ts){ts.tx=0;ts.ty=0;} renderEditor(); renderMain(); renderList(); });
   const f=$("#imgFile"); if(f) f.addEventListener("change",ev=>loadImageInto(ev,im));
 }
 
@@ -383,7 +445,7 @@ $("#backFile").addEventListener("change",ev=>{ const f=ev.target.files[0]; if(!f
 
 /* ---------- adicionar / remover ---------- */
 $("#addSlide").addEventListener("click",()=>{
-  state.content.push({nome:"Novo local",bairro:"Bairro",frase:"",insta:"@",img:imgState()});
+  state.content.push({nome:"Novo local",bairro:"Bairro",frase:"",insta:"@",tx:0,ty:0,fmt:{},img:imgState()});
   sel=state.content.length; renderAll();
 });
 $("#delSlide").addEventListener("click",()=>{
@@ -393,18 +455,105 @@ $("#delSlide").addEventListener("click",()=>{
   sel=Math.max(0,sel-1); renderAll();
 });
 
-/* ---------- arrastar pra posicionar ---------- */
-let dragging=false,lastX=0,lastY=0;
-function ptr(e){ const t=e.touches?e.touches[0]:e; return {x:t.clientX,y:t.clientY}; }
-main.addEventListener("pointerdown",e=>{ const im=currentImg(); if(!im||!im.image)return;
-  dragging=true; main.classList.add("drag"); const p=ptr(e); lastX=p.x; lastY=p.y;
-  try{main.setPointerCapture(e.pointerId);}catch(_){} });
-main.addEventListener("pointermove",e=>{ if(!dragging)return; const im=currentImg(); if(!im)return;
-  const p=ptr(e); const ratio=1080/main.clientWidth;
-  im.panX+=(p.x-lastX)*ratio; im.panY+=(p.y-lastY)*ratio; lastX=p.x; lastY=p.y;
-  clampPan(im); renderMain(); });
-main.addEventListener("pointerup",()=>{ if(dragging){dragging=false; main.classList.remove("drag"); renderList();} });
-main.addEventListener("pointercancel",()=>{ dragging=false; main.classList.remove("drag"); });
+/* ---------- arrastar (foto ou texto) ---------- */
+function curText(){ const it=items()[sel]; if(it.type==="cover")return state.cover; if(it.type==="content")return state.content[it.i]; return null; }
+function inside(b,x,y){ return b && x>=b.x && x<=b.x+b.w && y>=b.y && y<=b.y+b.h; }
+function aPoint(e){ const r=main.getBoundingClientRect(); const t=e.touches?e.touches[0]:e;
+  return {ax:(t.clientX-r.left)*(1080/r.width), ay:(t.clientY-r.top)*(1350/r.height), cx:t.clientX, cy:t.clientY}; }
+let dragging=false,mode=null,lastX=0,lastY=0;
+main.addEventListener("pointerdown",e=>{
+  const p=aPoint(e); lastX=p.cx; lastY=p.cy;
+  if(curText() && mainRec && inside(mainRec.block,p.ax,p.ay)) mode="text";
+  else if(currentImg() && currentImg().image) mode="image";
+  else { mode=null; return; }
+  dragging=true; main.classList.add("drag");
+  try{main.setPointerCapture(e.pointerId);}catch(_){}
+});
+main.addEventListener("pointermove",e=>{
+  if(!dragging)return; const t=e.touches?e.touches[0]:e; const ratio=1080/main.clientWidth;
+  const dx=(t.clientX-lastX)*ratio, dy=(t.clientY-lastY)*ratio; lastX=t.clientX; lastY=t.clientY;
+  if(mode==="image"){ const im=currentImg(); im.panX+=dx; im.panY+=dy; clampPan(im); }
+  else if(mode==="text"){ const ts=curText(); ts.tx=(ts.tx||0)+dx; ts.ty=(ts.ty||0)+dy; }
+  renderMain();
+});
+main.addEventListener("pointerup",()=>{ if(dragging){dragging=false; mode=null; main.classList.remove("drag"); renderList();} });
+main.addEventListener("pointercancel",()=>{ dragging=false; mode=null; main.classList.remove("drag"); });
+
+/* ---------- editar texto direto na arte (duplo clique) ---------- */
+function fieldAccess(field){
+  const it=items()[sel];
+  if(it.type==="cover"){
+    if(field==="destaque") return {get:()=>state.cover.destaque, set:v=>state.cover.destaque=v, side:"cDest"};
+    return {get:()=>state.cover.titulo, set:v=>state.cover.titulo=v, side:"cTit"};
+  }
+  const c=state.content[it.i];
+  const map={nome:"fNome",bairro:"fBairro",frase:"fFrase",insta:"fInsta"};
+  return {get:()=>c[field], set:v=>c[field]=v, side:map[field]};
+}
+let editorEl=null;
+function closeEditor(){ if(editorEl){ editorEl.remove(); editorEl=null; renderEditor(); } }
+function openInlineEditor(field,b){
+  closeEditor();
+  const acc=fieldAccess(field), sl=curText();
+  sl.fmt=sl.fmt||{}; const fm=sl.fmt[field]=sl.fmt[field]||{};
+  const sx=main.clientWidth/1080, sy=main.clientHeight/1350;
+  const wrapEl=document.createElement("div"); wrapEl.className="inline-wrap";
+  wrapEl.style.left=Math.max(2,b.x*sx)+"px";
+  wrapEl.style.top=Math.max(2,b.y*sy-40)+"px";
+  wrapEl.style.width=Math.max(140,b.w*sx)+"px";
+  const bar=document.createElement("div"); bar.className="fmt-bar";
+  const curSize=()=>Math.round(fm.size||DEF_SIZE[field]);
+  bar.innerHTML=`<button data-a="dec" title="Diminuir">−</button><span class="sz">${curSize()}</span>`
+    +`<button data-a="inc" title="Aumentar">+</button>`
+    +`<button data-a="bold" class="${fm.bold?'on':''}" title="Negrito"><b>B</b></button>`
+    +`<button data-a="ital" class="${fm.italic?'on':''}" title="Itálico"><i>I</i></button>`;
+  const ta=document.createElement("textarea"); ta.className="inline-edit"; ta.value=acc.get()||"";
+  ta.style.minHeight=Math.max(28,b.h*sy)+"px";
+  wrapEl.appendChild(bar); wrapEl.appendChild(ta);
+  $(".canvas-shell").appendChild(wrapEl); editorEl=wrapEl;
+  ta.focus(); ta.select();
+  const szEl=bar.querySelector(".sz");
+  bar.addEventListener("mousedown",e=>e.preventDefault());
+  bar.addEventListener("click",e=>{
+    const btn=e.target.closest("button"); if(!btn)return; const a=btn.dataset.a;
+    if(a==="dec") fm.size=Math.max(8,curSize()-2);
+    else if(a==="inc") fm.size=Math.min(300,curSize()+2);
+    else if(a==="bold"){ fm.bold=!fm.bold; btn.classList.toggle("on"); }
+    else if(a==="ital"){ fm.italic=!fm.italic; btn.classList.toggle("on"); }
+    szEl.textContent=curSize(); renderMain(); renderList();
+  });
+  ta.addEventListener("input",()=>{ acc.set(ta.value); const se=$("#"+acc.side); if(se) se.value=ta.value; renderMain(); renderList(); });
+  ta.addEventListener("keydown",ev=>{ if(ev.key==="Escape"||(ev.key==="Enter"&&!ev.shiftKey)){ ev.preventDefault(); closeEditor(); } });
+  ta.addEventListener("blur",closeEditor);
+}
+main.addEventListener("dblclick",e=>{
+  if(!mainRec||!mainRec.fields)return;
+  const p=aPoint(e);
+  for(const k in mainRec.fields){ if(inside(mainRec.fields[k],p.ax,p.ay)){ openInlineEditor(k,mainRec.fields[k]); return; } }
+});
+
+/* ---------- arrastar imagens de fora pra virar fundo ---------- */
+function filesToImages(fileList){
+  const arr=[...fileList].filter(f=>f.type && f.type.startsWith("image/"));
+  return Promise.all(arr.map(f=>new Promise(res=>{
+    const r=new FileReader(); r.onload=()=>{ const im=new Image(); im.onload=()=>res(im); im.src=r.result; }; r.readAsDataURL(f);
+  })));
+}
+async function dropImages(it, fileList){
+  const imgs=await filesToImages(fileList); if(!imgs.length) return;
+  const queue=imgs.slice();
+  if(it.type==="back"){ state.back.image=queue[0]; renderAll(); return; }
+  if(it.type==="cover"){ const im=state.cover.img; im.image=queue.shift(); im.panX=0; im.panY=0; }
+  let ci = it.type==="content" ? it.i : 0;
+  for(const img of queue){
+    if(ci>=state.content.length) state.content.push({nome:"Novo local",bairro:"Bairro",frase:"",insta:"@",tx:0,ty:0,fmt:{},img:imgState()});
+    const im=state.content[ci].img; im.image=img; im.panX=0; im.panY=0; ci++;
+  }
+  renderAll();
+}
+main.addEventListener("dragover",e=>{ e.preventDefault(); main.classList.add("dropping"); });
+main.addEventListener("dragleave",()=>main.classList.remove("dropping"));
+main.addEventListener("drop",e=>{ e.preventDefault(); main.classList.remove("dropping"); dropImages(items()[sel], e.dataTransfer.files); });
 
 /* ---------- export ---------- */
 function download(blob,nome){ const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=nome;
@@ -432,16 +581,22 @@ $("#dlZip").addEventListener("click",async()=>{
 
 /* ---------- configurações (margem das internas) ---------- */
 $("#cfgBtn").addEventListener("click",()=>{ const p=$("#cfgPanel"); p.hidden=!p.hidden; });
-["padL","padB"].forEach(k=>{
-  const e=$("#"+k), v=$("#"+k+"v");
-  e.addEventListener("input",()=>{ state.settings[k]=parseInt(e.target.value,10); v.textContent=state.settings[k]+"px"; renderMain(); renderList(); });
-});
+function setMargin(key,val){
+  let n=parseInt(val,10); if(isNaN(n)) return;
+  n=Math.max(0,Math.min(400,n));
+  state.settings[key]=n;
+  const r=$("#"+key), num=$("#"+key+"n");
+  if(r && +r.value!==Math.min(200,n)) r.value=Math.min(200,n);
+  if(num && +num.value!==n) num.value=n;
+  if(items()[sel].type!=="content"){ const idx=items().findIndex(it=>it.type==="content"); if(idx>=0){ sel=idx; renderEditor(); } }
+  renderMain(); renderList();
+}
 
 /* ---------- nota da fonte ---------- */
 function fontMsg(loaded){
   $("#fontnote").innerHTML = loaded
-    ? `<b>Fonte Cook Tramvoid carregada.</b> Os títulos já estão na fonte da marca.`
-    : `<b>Fonte Cook Tramvoid não encontrada</b> — usando uma fonte de reserva por enquanto. Pra ativar a fonte da marca: crie uma pasta <code>fonts/</code> no seu repositório e suba o arquivo como <code>CookTramvoid.woff2</code> (ou <code>.woff</code> / <code>.ttf</code>). O app já aponta pra esse caminho.`;
+    ? `<b>Fonte Cook Trapvoid carregada.</b> Os títulos já estão na fonte da marca.`
+    : `<b>Fonte Cook Trapvoid não encontrada</b> — usando uma fonte de reserva por enquanto. Confira se o arquivo está em <code>fonts/CookTrapvoid.otf</code> (mesma pasta do index.html), com esse nome exato. Se acabou de subir, force o recarregamento (aba anônima) por causa do cache.`;
 }
 
 /* ---------- init (espera fontes) ---------- */
@@ -449,7 +604,7 @@ async function init(){
   try{ await document.fonts.load(`400 30px Lato`); await document.fonts.load(`700 30px Lato`); }catch(e){}
   try{ await document.fonts.load(`600 90px "Fraunces"`); }catch(e){}
   let cook=false;
-  try{ cook = await document.fonts.load(`600 90px "Cook Tramvoid"`).then(f=>f.length>0); }catch(e){ cook=false; }
+  try{ cook = await document.fonts.load(`600 90px "Cook Trapvoid"`).then(f=>f.length>0); }catch(e){ cook=false; }
   fontMsg(cook);
   renderAll();
 }
